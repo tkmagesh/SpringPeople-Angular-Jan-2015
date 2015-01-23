@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Angular Intro</title>
+	<script src="jquery-2.1.3.js"></script>
+	<script>
+	function NameModel(){
+		var _val = "";
+		this.setValue = function(val){
+			_val = val;
+			triggerChange();
+		};
+		this.getValue = function(){
+			return _val;
+		}
+		var eventHandlers = [];
+		this.addSubscriber = function(subscriptionFn){
+			eventHandlers.push(subscriptionFn);
+		};
+		function triggerChange(){
+			for(var i=0;i<eventHandlers.length;i++){
+				var eventHandler = eventHandlers[i];
+				eventHandler();
+			}
+		}
+	}
+	function NameView(nodeId, model){
+		var $root = $(nodeId);
+
+		//subscribing to model changes
+		model.addSubscriber(function(){
+			$("#divName", $root).html(model.getValue());
+		});
+
+		$root.on("keyup","#textName", function(){
+			model.setValue(this.value);
+		});
+	}
+	$(function(){
+		window.model = new NameModel();
+		window.view = new NameView("#content" , window.model);
+	})
+	</script>
+</head>
+<body>
+	<div id="content">
+		<input type="text" id="textName" >
+		<div id="divName"></div>	
+	</div>
+	
+</body>
+</html>

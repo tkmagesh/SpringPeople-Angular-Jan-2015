@@ -3,9 +3,33 @@
 <head>
 	<meta charset="UTF-8">
 	<title>Closures</title>
+	<script>
+	(function (){
+		var count = 0;
+		function trackClick(){
+			++count;
+			document.getElementById("divMessage").innerHTML = count;
+		}
+		function init(){
+			document.getElementById("btnTrack").addEventListener("click", trackClick);
+			document.getElementById("btnRemove").addEventListener("click", onBtnRemoveClick);
+			document.getElementById("btnAttach").addEventListener("click", onBtnAttachClick)
+		}
+		function onBtnRemoveClick(){
+			document.getElementById("btnTrack").removeEventListener("click", trackClick);
+		}
+		function onBtnAttachClick(){
+			document.getElementById("btnTrack").addEventListener("click", trackClick);
+		}
+		window.addEventListener("DOMContentLoaded", init);
+	})();
+	</script>
 </head>
 <body>
-	<input type="button" value="Track" id="btnTrack">
+	<input type="button" value="Track" id="btnTrack" >
+
 	<div id="divMessage">[count]</div>
+	<input type="button" value="Remove" id="btnRemove">
+	<input type="button" value="Attach" id="btnAttach">
 </body>
 </html>
