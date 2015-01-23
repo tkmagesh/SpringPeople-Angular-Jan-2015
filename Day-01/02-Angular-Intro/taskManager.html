@@ -32,6 +32,12 @@
 
 		$scope.toggle = function(task){
 			task.isCompleted = !task.isCompleted;
+		};
+
+		$scope.removeCompleted = function(){
+			for(var i=$scope.list.length-1; i>=0 ; i--)
+				if ($scope.list[i].isCompleted)
+					$scope.list.splice(i,1);
 		}
 	});
 	</script>
@@ -44,7 +50,7 @@
 	<label for="">Task :</label>
 	<input type="text" ng-model="newTask">
 	<input type="button" value="Add Task" ng-click="addNew()">
-	<input type="button" value="Remove Completed">
+	<input type="button" value="Remove Completed" data-ng-click="removeCompleted()">
 	<ol>
 		<li data-ng-repeat="task in list" 
 			ng-click="toggle(task)"
