@@ -16,22 +16,42 @@
 	</style>
 	<script src="angular.min.js"></script>
 	<script>
+	var taskApp = angular.module("taskApp", []);
+	taskApp.controller("taskController", function($scope){
+		$scope.newTask = "";
+		$scope.list = [
+			
+		];
+		$scope.addNew = function(){
+			var task = {
+				name : $scope.newTask,
+				isCompleted : false
+			};
+			$scope.list.push(task);
+		};
 
+		$scope.toggle = function(task){
+			task.isCompleted = !task.isCompleted;
+		}
+	});
 	</script>
 </head>
-<body>
+<body ng-app="taskApp">
 	<h1>Task Manager</h1>
 	<hr>
+	<div data-ng-controller="taskController">
 	<h3>3/7</h3>
 	<label for="">Task :</label>
-	<input type="text" name="" id="">
-	<input type="button" value="Add Task">
+	<input type="text" ng-model="newTask">
+	<input type="button" value="Add Task" ng-click="addNew()">
 	<input type="button" value="Remove Completed">
 	<ol>
-		<li>Task - 1</li>
-		<li class="completed">Task - 2</li>
-		<li>Task - 3</li>
+		<li data-ng-repeat="task in list" 
+			ng-click="toggle(task)"
+			data-ng-class="{completed : task.isCompleted}"
+		>{{task.name}}</li>
 	</ol>
 	<div>[message]</div>
+	</div>
 </body>
 </html>
