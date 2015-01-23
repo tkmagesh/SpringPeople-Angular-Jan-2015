@@ -16,28 +16,39 @@
 	</style>
 	<script src="angular.min.js"></script>
 	<script>
+	
 	var taskApp = angular.module("taskApp", []);
 	taskApp.controller("taskController", function($scope){
 		$scope.newTask = "";
+		$scope.message = "";
 		$scope.list = [
 			
 		];
 		$scope.addNew = function(){
 			var task = {
 				name : $scope.newTask,
-				isCompleted : false
+				isCompleted : false,
+				toggle : function(){
+					this.isCompleted = !this.isCompleted;
+				}
 			};
 			$scope.list.push(task);
+			$scope.message = "A new task is added";
 		};
 
 		$scope.toggle = function(task){
-			task.isCompleted = !task.isCompleted;
+			task.toggle();
 		};
 
 		$scope.removeCompleted = function(){
 			for(var i=$scope.list.length-1; i>=0 ; i--)
 				if ($scope.list[i].isCompleted)
 					$scope.list.splice(i,1);
+			$scope.message = "Zero or more completed tasks are removed";
+		};
+
+		$scope.getCompletedCount = function(){
+			return ($scope.list.filter(function(t){ return t.isCompleted})).length;
 		}
 	});
 	</script>
@@ -46,7 +57,7 @@
 	<h1>Task Manager</h1>
 	<hr>
 	<div data-ng-controller="taskController">
-	<h3>3/7</h3>
+	<h3>{{getCompletedCount()}}/{{list.length}}</h3>
 	<label for="">Task :</label>
 	<input type="text" ng-model="newTask">
 	<input type="button" value="Add Task" ng-click="addNew()">
@@ -57,7 +68,7 @@
 			data-ng-class="{completed : task.isCompleted}"
 		>{{task.name}}</li>
 	</ol>
-	<div>[message]</div>
+	<div>{{message}}</div>
 	</div>
 </body>
 </html>
