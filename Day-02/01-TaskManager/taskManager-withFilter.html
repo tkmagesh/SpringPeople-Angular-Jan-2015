@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Task Manager</title>
+	<style>
+	.completed {
+		color : red;
+		text-decoration: line-through;
+		font-style: italic;
+		font-weight: bold;
+	}
+	li{
+		cursor: pointer;
+	}
+	.taskCategory{
+		font-style: italic;
+	}
+	</style>
+	<script src="angular.min.js"></script>
+	<script src="moment.js"></script>
+	<script>
+	var taskApp = angular.module("taskApp", []);
+	
+	taskApp.service("taskStorage", function(Task){
+		var storage = window.localStorage;
+		this.save = function(task){
+			storage.setItem(task.id, JSON.stringify(task));
+		};
+		this.getAll = function(){
+			var result = [];
+			for(var i=0;i<storage.length;i++){
+				var key = storage.key(i);
+				var taskAsString = storage.getItem(key);
+				var task = new Task(JSON.parse(taskAsString));
+				result.push(task);
+			}
+			return result;
+		};
+		this.remove = function(task){
+			storage.removeItem(task.id);
+		}
+	});
+
+	taskApp.factory("Task" , function(){
+		function Task(defaults){
+			defaults = defaults || {};
+			this.id = defaults.id || new Date().valueOf().toString();
+			this.name = defaults.name || "";
+			this.category =  defaults.category || "Recreational";
+			this.isCompleted = defaults.isCompleted || false;
+			this.createdAt = defaults.createdAt || new Date();
+		}
+		Task.prototype.toggle = function(){
+			this.isCompleted = !this.isCompleted;
+		}
+		return Task;
+	});
+	taskApp.controller("taskController", function($scope, Task, taskStorage){
+
+		$scope.categories = ["Personal", "Recreational", "Official"];
+
+		
+		$scope.message = "";
+		$scope.list = taskStorage.getAll();
+
+		console.table($scope.list);
+
+		$scope.addNew = function(newTask, taskCategory){
+			var task = new Task({name : newTask, category : taskCategory});
+			taskStorage.save(task);
+			$scope.list.push(task);
+			$scope.message = "A new task is added";
+		};
+
+		$scope.toggle = function(task){
+			task.toggle();
+			taskStorage.save(task);
+		};
+
+		$scope.removeCompleted = function(){
+			for(var i=$scope.list.length-1; i>=0 ; i--)
+				if ($scope.list[i].isCompleted){
+					taskStorage.remove($scope.list[i]);
+					$scope.list.splice(i,1);
+				}
+			$scope.message = "Zero or more completed tasks are removed";
+		};
+
+		$scope.getCompletedCount = function(){
+			return ($scope.list.filter(function(t){ return t.isCompleted})).length;
+		};
+
+		
+	});
+
+	taskApp.filter("trimText", function(){
+		return function(data, trimLength){
+			data = data || "";
+			trimLength = trimLength || 15;
+			return data.length < trimLength ? data : data.substr(0,trimLength)+"...";
+		};
+	});
+
+	taskApp.filter("toMoment", function(){
+		return function(data){
+			return moment(data).fromNow();
+		}
+	});
+	</script>
+</head>
+<body ng-app="taskApp">
+	<h1>Task Manager</h1>
+	<hr>
+	<div data-ng-controller="taskController">
+	<h3>{{getCompletedCount()}}/{{list.length}}</h3>
+	<label for="">Task :</label>
+	<input type="text" ng-model="newTask">
+	<select ng-model="taskCategory">
+		<option ng-repeat="category in categories" value="{{category}}">{{category}}</option>
+	</select>
+	<input type="button" value="Add Task" ng-click="addNew(newTask, taskCategory)">
+	<input type="button" value="Remove Completed" data-ng-click="removeCompleted()">
+	<div data-ng-repeat="category in categories">
+		<h3>{{category}}</h3>
+		<ol>
+			<li data-ng-repeat="task in list | filter:category" 
+				ng-click="toggle(task)"
+				data-ng-class="{completed : task.isCompleted}"
+			><span>{{task.name | trimText}}</span> - <span class="taskCategory">[{{task.createdAt | toMoment}}]</span></li>
+		</ol>
+	</div>
+	
+	<div>{{message}}</div>
+	</div>
+</body>
+</html>
