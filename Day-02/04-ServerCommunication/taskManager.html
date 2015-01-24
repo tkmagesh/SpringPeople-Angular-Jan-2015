@@ -21,12 +21,13 @@
 	<script>
 	var taskApp = angular.module("taskApp", []);
 	
-	taskApp.service("taskStorage", function(Task){
+	taskApp.service("taskStorage", function(Task, $q, $http){
 		var storage = window.localStorage;
 		this.save = function(task){
 			storage.setItem(task.id, JSON.stringify(task));
 		};
-		this.getAll = function(){
+		//replace the following to talk to server
+		/*this.getAll = function(){
 			var result = [];
 			for(var i=0;i<storage.length;i++){
 				var key = storage.key(i);
@@ -35,7 +36,18 @@
 				result.push(task);
 			}
 			return result;
-		};
+		};*/
+		this.getAll = function(){
+			var deferred = $q.defer()
+			var promise = $http({ method : "get", url : "taskData.json"});
+			promise.then(function(response){
+				var result = response.data.tasks.map(function(taskData){
+					return new Task(taskData);
+				});
+				deferred.resolve(result);
+			});
+			return deferred.promise;
+		}
 		this.remove = function(task){
 			storage.removeItem(task.id);
 		}
@@ -63,15 +75,11 @@
 		//Replace the following line to fetch the tasksData.json file
 		//$scope.list = taskStorage.getAll();
 		$scope.list = [];
-		var promise = $http({ method : "get", url : "taskData.json"});
-		promise.then(function(response){
-			$scope.list = response.data.tasks.map(function(taskData){
-				return new Task(taskData);
-			});
+		taskStorage.getAll().then(function(data){
+			$scope.list = data;
 		});
-		promise.catch(function(){
-			console.dir(arguments);
-		});
+		
+		
 		$scope.addNew = function(newTask, taskCategory){
 			var task = new Task({name : newTask, category : taskCategory});
 			taskStorage.save(task);
