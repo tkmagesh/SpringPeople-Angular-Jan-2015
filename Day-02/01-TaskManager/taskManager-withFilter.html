@@ -20,10 +20,23 @@
 	<script src="angular.min.js"></script>
 	<script src="moment.js"></script>
 	<script>
-	var taskApp = angular.module("taskApp", []);
+
+	var utils = angular.module("utils",[]);
 	
-	taskApp.service("taskStorage", function(Task){
-		var storage = window.localStorage;
+	utils.value("momentWrapper", moment);
+
+
+	utils.filter("toMoment", function(momentWrapper){
+		return function(data){
+			return momentWrapper(data).fromNow();
+		}
+	});
+
+	var taskApp = angular.module("taskApp", ["utils"]);
+	taskApp.value("defaultTrimLength" , 15);
+
+	taskApp.service("taskStorage", function(Task, $window){
+		var storage = $window.localStorage;
 		this.save = function(task){
 			storage.setItem(task.id, JSON.stringify(task));
 		};
@@ -64,8 +77,6 @@
 		$scope.message = "";
 		$scope.list = taskStorage.getAll();
 
-		console.table($scope.list);
-
 		$scope.addNew = function(newTask, taskCategory){
 			var task = new Task({name : newTask, category : taskCategory});
 			taskStorage.save(task);
@@ -94,19 +105,15 @@
 		
 	});
 
-	taskApp.filter("trimText", function(){
+	taskApp.filter("trimText", function(defaultTrimLength){
 		return function(data, trimLength){
 			data = data || "";
-			trimLength = trimLength || 15;
+			trimLength = trimLength || defaultTrimLength;
 			return data.length < trimLength ? data : data.substr(0,trimLength)+"...";
 		};
 	});
 
-	taskApp.filter("toMoment", function(){
-		return function(data){
-			return moment(data).fromNow();
-		}
-	});
+	
 	</script>
 </head>
 <body ng-app="taskApp">
